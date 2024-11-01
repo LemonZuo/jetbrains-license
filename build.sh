@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # 从 .env 文件中导入环境变量
 if [ -f ".env" ]; then
     export $(cat .env | sed 's/#.*//g' | xargs)
