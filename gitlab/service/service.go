@@ -43,9 +43,20 @@ func LoadKeys() {
 }
 
 // createLicenseJson 创建许可证的JSON表示
-func createLicenseJson(licenseInfo entity.LicenseInfo) (string, error) {
+func createLicenseJson(licenseInfo entity.LicenseInfo, expireTime string) (string, error) {
 
-	expirationDate := time.Date(2100, 12, 31, 23, 59, 59, 0, time.UTC)
+	var expirationDate time.Time
+	var err error
+	if len(expireTime) == 0 {
+		// 默认过期时间为2年
+		expirationDate = time.Now().AddDate(2, 0, 0)
+	} else {
+		expirationDate, err = time.Parse(time.DateTime, expireTime)
+		if err != nil {
+			log.Printf("解析过期时间失败: %v", err)
+			return "", err
+		}
+	}
 
 	license := entity.License{
 		Version:                      1,
@@ -155,14 +166,14 @@ func encryptLicense(data string) (string, error) {
 }
 
 // Generate 生成许可证并通过HTTP响应发送
-func Generate(ctx *gin.Context, licenseInfo entity.LicenseInfo) {
-	createLicense(ctx, licenseInfo)
+func Generate(ctx *gin.Context, licenseInfo entity.LicenseInfo, expireTime string) {
+	createLicense(ctx, licenseInfo, expireTime)
 }
 
 // createLicense 创建并发送许可证
-func createLicense(ctx *gin.Context, licenseInfo entity.LicenseInfo) {
+func createLicense(ctx *gin.Context, licenseInfo entity.LicenseInfo, expireTime string) {
 	// 创建许可证的JSON数据
-	licenseJson, err := createLicenseJson(licenseInfo)
+	licenseJson, err := createLicenseJson(licenseInfo, expireTime)
 	if err != nil {
 		log.Printf("创建许可证JSON失败: %v", err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "内部服务器错误"})

@@ -26,6 +26,8 @@ func (controller *Controller) Generate(ctx *gin.Context) {
 		Email:   Email,
 		Company: Company,
 	}
+	// 过期时间
+	expireTime := ctx.PostForm("ExpireTime")
 	// 生成license
-	service.Generate(ctx, license)
+	service.Generate(ctx, license, expireTime)
 }
